@@ -1,11 +1,3 @@
-namespace SpriteKind {
-    export const floor = SpriteKind.create()
-}
-sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    otherSprite.destroy()
-    info.changeLifeBy(-1)
-    sprite.startEffect(effects.disintegrate)
-})
 function makeInvaders () {
     invaders = sprites.createProjectileFromSide(list[randint(0, 2)], 0, 50)
     invaders.setPosition(randint(10, 150), 0)
@@ -32,6 +24,9 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         `, SleepTravler, 0, -50)
     projectile.setFlag(SpriteFlag.DestroyOnWall, true)
 })
+info.onCountdownEnd(function () {
+    game.over(true, effects.confetti)
+})
 function MakeSleepTraveler () {
     SleepTravler = sprites.create(img`
         . . . . . . . c d . . . . . . . 
@@ -55,24 +50,21 @@ function MakeSleepTraveler () {
     SleepTravler.setStayInScreen(true)
     SleepTravler.bottom = 120
 }
-function makeBottomWall () {
-    bottomWall = sprites.create(assets.image`myImage`, SpriteKind.floor)
-    scaling.scaleToPixels(bottomWall, 160, ScaleDirection.Horizontally, ScaleAnchor.Middle)
-    bottomWall.bottom = 120
-}
-info.onCountdownEnd(function () {
-    game.over(true, effects.confetti)
-})
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, otherSprite) {
     sprite.destroy()
     otherSprite.destroy(effects.spray, 200)
     info.changeScoreBy(1)
 })
-let bottomWall: Sprite = null
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    info.changeLifeBy(-1)
+    sprite.startEffect(effects.disintegrate)
+})
 let SleepTravler: Sprite = null
 let projectile: Sprite = null
 let invaders: Sprite = null
 let list: Image[] = []
+let gameLength = game.askForNumber("How many seconds?")
 MakeSleepTraveler()
 scene.setBackgroundColor(5)
 list = [img`
@@ -128,8 +120,7 @@ list = [img`
     . . 1 . . . . . . . . 1 2 f f f 
     `]
 info.setLife(3)
-makeBottomWall()
-info.startCountdown(120)
+info.startCountdown(gameLength)
 game.onUpdateInterval(1500, function () {
     makeInvaders()
     invaders.setFlag(SpriteFlag.AutoDestroy, true)
